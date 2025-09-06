@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
@@ -10,6 +11,7 @@ import { app } from '../config/firebase'
 function Header() {
   const [user, setUser] = useState(null)
   const auth = getAuth(app)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -30,6 +32,7 @@ function Header() {
   const handleLogout = async () => {
     try {
       await signOut(auth)
+      navigate('/') // Redirect to home page after successful logout
     } catch (error) {
       alert(error.message)
     }

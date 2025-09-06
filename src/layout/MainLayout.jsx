@@ -29,7 +29,7 @@ const navItems = [
   { text: 'Admin', to: '/admin', icon: <AdminPanelSettingsIcon />, adminOnly: true },
   { text: 'Products', to: '/products', icon: <InventoryIcon /> },
   { text: 'Orders', to: '/orders', icon: <LocalShippingIcon /> },
-  { text: 'Profile', to: '/profile', icon: <AccountCircleIcon /> }
+  // { text: 'Profile', to: '/profile', icon: <AccountCircleIcon /> }
 ]
 
 function MainLayout() {
