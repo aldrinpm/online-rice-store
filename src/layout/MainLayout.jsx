@@ -90,6 +90,7 @@ function MainLayout() {
             display: 'flex',
             flexDirection: 'column',
             boxSizing: 'border-box',
+            borderRadius: 0,
           }}
         >
           {drawerContent}

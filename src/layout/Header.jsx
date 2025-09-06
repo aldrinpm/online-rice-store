@@ -36,7 +36,7 @@ function Header() {
   }
 
   return (
-    <AppBar position="static" color="primary" elevation={1}>
+    <AppBar position="static" color="primary" elevation={1} sx={{ boxShadow: 0 }}>
       <Toolbar sx={{ justifyContent: 'center', position: 'relative' }}>
         <Box sx={{ position: 'absolute', left: 16 }} />
         <Typography component="h1" variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
