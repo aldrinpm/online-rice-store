@@ -68,7 +68,22 @@ const Products = () => {
             <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardActionArea sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', p: 3 }}>
-                  <FastfoodIcon sx={{ fontSize: 80, color: 'action.active', mb: 2 }} />
+                  {product.imageUrl ? (
+                    <Box 
+                      component="img"
+                      src={product.imageUrl}
+                      alt={product.name}
+                      sx={{ 
+                        width: 120, 
+                        height: 120, 
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        mb: 2
+                      }}
+                    />
+                  ) : (
+                    <FastfoodIcon sx={{ fontSize: 80, color: 'action.active', mb: 2 }} />
+                  )}
                   <CardContent sx={{ width: '100%', p: 0 }}>
                     <Typography gutterBottom variant="h6" component="h2" align="center">
                       {product.name}
