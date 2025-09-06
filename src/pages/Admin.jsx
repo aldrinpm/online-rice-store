@@ -24,6 +24,7 @@ import { Add, Edit, Delete } from '@mui/icons-material'
 import { db } from '../config/firebase'
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
+import ImageUploader from '../components/ImageUploader'
 
 function TabPanel({ children, value, index }) {
   return (
@@ -117,7 +118,12 @@ const Admin = () => {
     }))
   }
 
-
+  const handleImageUpload = (imageUrl) => {
+    setFormData(prev => ({
+      ...prev,
+      imageUrl
+    }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -125,7 +131,12 @@ const Admin = () => {
     
     try {
       const productData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        stock: formData.stock,
+        category: formData.category,
+        imageUrl: formData.imageUrl || '', // Include imageUrl, default to empty string if not set
         updatedAt: serverTimestamp(),
         ...(!editing && { createdAt: serverTimestamp() })
       }
@@ -195,7 +206,7 @@ const Admin = () => {
       email: user.email || '',
       phone: user.phone || '',
       address: user.address || '',
-      role: user.role || 'user'
+      role: user.role || 'customer'
     })
     setEditingDocPath(user._docPath)
     setEditingUser(true)
@@ -356,6 +367,9 @@ const Admin = () => {
         <form onSubmit={handleSubmit}>
           <DialogTitle>{editing ? 'Edit Product' : 'Add New Product'}</DialogTitle>
           <DialogContent>
+            <Box sx={{ mb: 2 }}>
+              <ImageUploader onUpload={handleImageUpload}/>
+            </Box>
             <TextField
               margin="normal"
               fullWidth
