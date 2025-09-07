@@ -18,9 +18,19 @@ import {
   DialogContent, 
   DialogActions,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Snackbar,
+  Alert
 } from '@mui/material'
-import { Add, Edit, Delete } from '@mui/icons-material'
+import { Add, Edit, Delete, Event } from '@mui/icons-material'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import { db } from '../config/firebase'
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
@@ -52,6 +62,10 @@ const initialUserFormState = {
 
 const Admin = () => {
   const { currentUser, isAdmin, loading: authLoading } = useAuth()
+  const [orders, setOrders] = useState([])
+  const [filteredOrders, setFilteredOrders] = useState([])
+  const [startDate, setStartDate] = useState(startOfDay(new Date()))
+  const [endDate, setEndDate] = useState(endOfDay(new Date()))
   
   if (authLoading) {
     return (
@@ -81,8 +95,13 @@ const Admin = () => {
   const [editingUser, setEditingUser] = useState(false)
   const [editingDocPath, setEditingDocPath] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  })
 
-  // Fetch products and users
+  // Fetch products, users, and orders
   useEffect(() => {
     const productsUnsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
       const productsList = snapshot.docs.map(doc => ({
@@ -100,11 +119,62 @@ const Admin = () => {
       setUsers(usersList)
     })
 
+    const ordersUnsubscribe = onSnapshot(collection(db, 'orders'), (snapshot) => {
+      const ordersList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        _docPath: doc.ref.path
+      }))
+      setOrders(ordersList)
+      filterOrdersByDate(ordersList, startDate, endDate)
+    })
+
     return () => {
       productsUnsubscribe()
       usersUnsubscribe()
+      ordersUnsubscribe && ordersUnsubscribe()
     }
-  }, [])
+  }, [startDate, endDate])
+
+  const filterOrdersByDate = (ordersList, start, end) => {
+    const filtered = ordersList.filter(order => {
+      const orderDate = order.createdAt?.toDate() || new Date()
+      return isWithinInterval(orderDate, {
+        start: startOfDay(start),
+        end: endOfDay(end)
+      })
+    })
+    setFilteredOrders(filtered)
+  }
+
+  const handleDateChange = (type, date) => {
+    if (type === 'start') {
+      setStartDate(date)
+    } else {
+      setEndDate(date)
+    }
+  }
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), {
+        status: newStatus,
+        updatedAt: serverTimestamp()
+      })
+      setSnackbar({
+        open: true,
+        message: `${orderId.substring(0, 8)}... status has been updated!`,
+        severity: 'success'
+      })
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      setSnackbar({
+        open: true,
+        message: 'Failed to update order status',
+        severity: 'error'
+      })
+    }
+  }
 
   const handleChange = (event, newValue) => {
     setTab(newValue)
@@ -250,13 +320,17 @@ const Admin = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>Admin Dashboard</Typography>
-      <Tabs value={tab} onChange={handleChange} aria-label="admin tabs">
-        <Tab label="Products" />
-        <Tab label="Users" />
-      </Tabs>
-      
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={tab} onChange={handleChange} aria-label="admin tabs">
+          <Tab label="PRODUCTS" />
+          <Tab label="ORDERS" />
+          <Tab label="USERS" />
+        </Tabs>
+      </Box>
+
       <TabPanel value={tab} index={0}>
+        {/* Products tab content */}
         <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
           <Button 
             variant="contained" 
@@ -311,28 +385,28 @@ const Admin = () => {
         </TableContainer>
       </TabPanel>
       
-      <TabPanel value={tab} index={1}>
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+      <TabPanel value={tab} index={2}>
+        {/* Users tab content */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
           <Button 
             variant="contained" 
-            color="primary" 
             startIcon={<Add />}
-            onClick={() => setUserDialogOpen(true)}
+            onClick={() => {
+              setUserFormData(initialUserFormState)
+              setEditingUser(false)
+              setUserDialogOpen(true)
+            }}
           >
             Add User
           </Button>
         </Box>
-        
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell>Address</TableCell>
                 <TableCell>Role</TableCell>
-                <TableCell>Added</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -341,22 +415,116 @@ const Admin = () => {
                 <TableRow key={user._docPath}>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                  <TableCell>{user.address}</TableCell>
                   <TableCell>{user.role}</TableCell>
                   <TableCell>
-                    {user.createdAt?.toDate ? user.createdAt.toDate().toLocaleString() : 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleUserEdit(user)} color="primary">
+                    <IconButton onClick={() => {
+                      setUserFormData({
+                        name: user.name || '',
+                        email: user.email || '',
+                        phone: user.phone || '',
+                        address: user.address || '',
+                        role: user.role || 'user'
+                      })
+                      setEditingUser(true)
+                      setEditingDocPath(user._docPath)
+                      setUserDialogOpen(true)
+                    }}>
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={() => handleUserDelete(user._docPath)} color="error">
+                    <IconButton onClick={() => handleDelete(user._docPath)}>
                       <Delete />
                     </IconButton>
                   </TableCell>
                 </TableRow>
               ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </TabPanel>
+
+      <TabPanel value={tab} index={1}>
+        {/* Orders tab content */}
+        <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+          <DatePicker
+            label="Start Date"
+            value={startDate}
+            onChange={(date) => handleDateChange('start', date)}
+            renderInput={(params) => <TextField {...params} size="small" />}
+          />
+          <DatePicker
+            label="End Date"
+            value={endDate}
+            onChange={(date) => handleDateChange('end', date)}
+            renderInput={(params) => <TextField {...params} size="small" />}
+          />
+          <Button 
+            variant="contained" 
+            startIcon={<Event />}
+            onClick={() => {
+              const today = new Date()
+              setStartDate(startOfDay(today))
+              setEndDate(endOfDay(today))
+            }}
+          >
+            Today
+          </Button>
+        </Box>
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Order ID</TableCell>
+                <TableCell>Customer</TableCell>
+                <TableCell>Product</TableCell>
+                <TableCell>Quantity</TableCell>
+                <TableCell>Total</TableCell>
+                <TableCell>Order Date</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell>{order.id.substring(0, 8)}...</TableCell>
+                    <TableCell>{order.customerName}</TableCell>
+                    <TableCell>{order.productName}</TableCell>
+                    <TableCell>{order.quantity}</TableCell>
+                    <TableCell>
+                      ₱{order.totalPrice?.toLocaleString('en-US', { 
+                        minimumFractionDigits: 2, 
+                        maximumFractionDigits: 2 
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      <FormControl size="small" variant="outlined" fullWidth>
+                        <Select
+                          value={order.status || 'pending'}
+                          onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                          displayEmpty
+                          inputProps={{ 'aria-label': 'Order status' }}
+                        >
+                          <MenuItem value="pending">Pending</MenuItem>
+                          <MenuItem value="completed">Completed</MenuItem>
+                          <MenuItem value="cancelled">Cancelled</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body1" color="textSecondary">
+                      No orders found for the selected date range
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -509,6 +677,21 @@ const Admin = () => {
           </DialogActions>
         </form>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      </LocalizationProvider>
     </Box>
   )
 }
