@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Tabs, 
-  Tab, 
-  Box, 
-  Typography, 
-  Button, 
-  TextField, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
+import {
+  Tabs,
+  Tab,
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   DialogActions,
   IconButton,
   CircularProgress,
@@ -66,7 +66,7 @@ const Admin = () => {
   const [filteredOrders, setFilteredOrders] = useState([])
   const [startDate, setStartDate] = useState(startOfDay(new Date()))
   const [endDate, setEndDate] = useState(endOfDay(new Date()))
-  
+
   if (authLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
@@ -74,7 +74,7 @@ const Admin = () => {
       </Box>
     )
   }
-  
+
   if (!isAdmin()) {
     return (
       <Box p={3}>
@@ -198,7 +198,7 @@ const Admin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setUploading(true)
-    
+
     try {
       const productData = {
         name: formData.name,
@@ -216,7 +216,7 @@ const Admin = () => {
       } else {
         await addDoc(collection(db, 'products'), productData)
       }
-      
+
       handleClose()
     } catch (error) {
       console.error('Error saving product:', error)
@@ -296,7 +296,7 @@ const Admin = () => {
   const handleUserSubmit = async (e) => {
     e.preventDefault()
     setUploading(true)
-    
+
     try {
       const userData = {
         ...userFormData,
@@ -309,7 +309,7 @@ const Admin = () => {
       } else {
         await addDoc(collection(db, 'users'), userData)
       }
-      
+
       handleUserDialogClose()
     } catch (error) {
       console.error('Error saving user:', error)
@@ -320,377 +320,404 @@ const Admin = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        py: 1,
+        backdropFilter: 'blur(12px)',
+        background: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: '20px',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+      }}
+    >
+      <Typography
+        variant="h4"
+        sx={{
+          fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
+          fontWeight: 700,
+          letterSpacing: '1px',
+          color: '#fff',
+          textShadow: '0 0 10px #000',
+        }}
+      >
+        Admin Dashboard
+      </Typography>
+    </Box>
+
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tab} onChange={handleChange} aria-label="admin tabs">
-          <Tab label="PRODUCTS" />
-          <Tab label="ORDERS" />
-          <Tab label="USERS" />
-        </Tabs>
-      </Box>
-
-      <TabPanel value={tab} index={0}>
-        {/* Products tab content */}
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<Add />}
-            onClick={() => setOpen(true)}
-          >
-            Add Product
-          </Button>
+          <Tabs value={tab} onChange={handleChange} aria-label="admin tabs">
+            <Tab label="PRODUCTS" />
+            <Tab label="ORDERS" />
+            <Tab label="USERS" />
+          </Tabs>
         </Box>
-        
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Stock</TableCell>
-                <TableCell>Added</TableCell>
-                <TableCell>Updated</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product._docPath || product.id}>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.description}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>₱{product.price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                  <TableCell>{product.stock}</TableCell>
-                  <TableCell>
-                    {product.createdAt?.toDate ? product.createdAt.toDate().toLocaleString() : 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    {product.updatedAt?.toDate ? product.updatedAt.toDate().toLocaleString() : 'N/A'}
-                  </TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => handleEdit(product)} color="primary">
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(product._docPath)} color="error">
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
+
+        <TabPanel value={tab} index={0}>
+          {/* Products tab content */}
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Add />}
+              onClick={() => setOpen(true)}
+            >
+              Add Product
+            </Button>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Category</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Stock</TableCell>
+                  <TableCell>Added</TableCell>
+                  <TableCell>Updated</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </TabPanel>
-      
-      <TabPanel value={tab} index={2}>
-        {/* Users tab content */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <Button 
-            variant="contained" 
-            startIcon={<Add />}
-            onClick={() => {
-              setUserFormData(initialUserFormState)
-              setEditingUser(false)
-              setUserDialogOpen(true)
-            }}
-          >
-            Add User
-          </Button>
-        </Box>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user._docPath}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={() => {
-                      setUserFormData({
-                        name: user.name || '',
-                        email: user.email || '',
-                        phone: user.phone || '',
-                        address: user.address || '',
-                        role: user.role || 'user'
-                      })
-                      setEditingUser(true)
-                      setEditingDocPath(user._docPath)
-                      setUserDialogOpen(true)
-                    }}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton onClick={() => handleDelete(user._docPath)}>
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </TabPanel>
-
-      <TabPanel value={tab} index={1}>
-        {/* Orders tab content */}
-        <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <DatePicker
-            label="Start Date"
-            value={startDate}
-            onChange={(date) => handleDateChange('start', date)}
-            renderInput={(params) => <TextField {...params} size="small" />}
-          />
-          <DatePicker
-            label="End Date"
-            value={endDate}
-            onChange={(date) => handleDateChange('end', date)}
-            renderInput={(params) => <TextField {...params} size="small" />}
-          />
-          <Button 
-            variant="contained" 
-            startIcon={<Event />}
-            onClick={() => {
-              const today = new Date()
-              setStartDate(startOfDay(today))
-              setEndDate(endOfDay(today))
-            }}
-          >
-            Today
-          </Button>
-        </Box>
-
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Order ID</TableCell>
-                <TableCell>Customer</TableCell>
-                <TableCell>Product</TableCell>
-                <TableCell>Quantity</TableCell>
-                <TableCell>Total</TableCell>
-                <TableCell>Order Date</TableCell>
-                <TableCell>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell>{order.id.substring(0, 8)}...</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.productName}</TableCell>
-                    <TableCell>{order.quantity}</TableCell>
+              </TableHead>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product._docPath || product.id}>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.description}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>₱{product.price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                    <TableCell>{product.stock}</TableCell>
                     <TableCell>
-                      ₱{order.totalPrice?.toLocaleString('en-US', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                      })}
+                      {product.createdAt?.toDate ? product.createdAt.toDate().toLocaleString() : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                      {product.updatedAt?.toDate ? product.updatedAt.toDate().toLocaleString() : 'N/A'}
                     </TableCell>
                     <TableCell>
-                      <FormControl size="small" variant="outlined" fullWidth>
-                        <Select
-                          value={order.status || 'pending'}
-                          onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          displayEmpty
-                          inputProps={{ 'aria-label': 'Order status' }}
-                        >
-                          <MenuItem value="pending">Pending</MenuItem>
-                          <MenuItem value="completed">Completed</MenuItem>
-                          <MenuItem value="cancelled">Cancelled</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <IconButton onClick={() => handleEdit(product)} color="primary">
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(product._docPath)} color="error">
+                        <Delete />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </TabPanel>
+
+        <TabPanel value={tab} index={2}>
+          {/* Users tab content */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => {
+                setUserFormData(initialUserFormState)
+                setEditingUser(false)
+                setUserDialogOpen(true)
+              }}
+            >
+              Add User
+            </Button>
+          </Box>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                    <Typography variant="body1" color="textSecondary">
-                      No orders found for the selected date range
-                    </Typography>
-                  </TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Actions</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </TabPanel>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user._docPath}>
+                    <TableCell>{user.name}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>
+                      <IconButton onClick={() => {
+                        setUserFormData({
+                          name: user.name || '',
+                          email: user.email || '',
+                          phone: user.phone || '',
+                          address: user.address || '',
+                          role: user.role || 'user'
+                        })
+                        setEditingUser(true)
+                        setEditingDocPath(user._docPath)
+                        setUserDialogOpen(true)
+                      }}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton onClick={() => handleDelete(user._docPath)}>
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </TabPanel>
 
-      {/* Add/Edit Product Dialog */}
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <form onSubmit={handleSubmit}>
-          <DialogTitle>{editing ? 'Edit Product' : 'Add New Product'}</DialogTitle>
-          <DialogContent>
-            <Box sx={{ mb: 2 }}>
-              <ImageUploader onUpload={handleImageUpload}/>
-            </Box>
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
+        <TabPanel value={tab} index={1}>
+          {/* Orders tab content */}
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(date) => handleDateChange('start', date)}
+              renderInput={(params) => <TextField {...params} size="small" />}
             />
-            <TextField
-              margin="normal"
-              fullWidth
-              multiline
-              rows={3}
-              label="Description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              required
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={(date) => handleDateChange('end', date)}
+              renderInput={(params) => <TextField {...params} size="small" />}
             />
-            <TextField
-              margin="normal"
-              fullWidth
-              type="number"
-              label="Price"
-              name="price"
-              value={formData.price}
-              onChange={handleInputChange}
-              inputProps={{ min: 0, step: '0.01' }}
-              required
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              type="number"
-              label="Stock"
-              name="stock"
-              value={formData.stock}
-              onChange={handleInputChange}
-              inputProps={{ min: 0 }}
-              required
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              select
-              label="Category"
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              SelectProps={{ native: true }}
-              required
+            <Button
+              variant="contained"
+              startIcon={<Event />}
+              onClick={() => {
+                const today = new Date()
+                setStartDate(startOfDay(today))
+                setEndDate(endOfDay(today))
+              }}
             >
-              <option value="Premium">Premium</option>
-              <option value="Regular">Regular</option>
-              <option value="Special">Special</option>
-            </TextField>
+              Today
+            </Button>
+          </Box>
 
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} disabled={uploading}>
-              Cancel
-            </Button>
-            <Button type="submit" color="primary" variant="contained" disabled={uploading}>
-              {uploading ? 'Saving...' : 'Save'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Order ID</TableCell>
+                  <TableCell>Customer</TableCell>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Order Date</TableCell>
+                  <TableCell>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell>{order.id.substring(0, 8)}...</TableCell>
+                      <TableCell>{order.customerName}</TableCell>
+                      <TableCell>{order.productName}</TableCell>
+                      <TableCell>{order.quantity}</TableCell>
+                      <TableCell>
+                        ₱{order.totalPrice?.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <FormControl size="small" variant="outlined" fullWidth>
+                          <Select
+                            value={order.status || 'pending'}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            displayEmpty
+                            inputProps={{ 'aria-label': 'Order status' }}
+                          >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                            <MenuItem value="cancelled">Cancelled</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                      <Typography variant="body1" color="textSecondary">
+                        No orders found for the selected date range
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </TabPanel>
 
-      {/* Add/Edit User Dialog */}
-      <Dialog open={userDialogOpen} onClose={handleUserDialogClose} maxWidth="sm" fullWidth>
-        <form onSubmit={handleUserSubmit}>
-          <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
-          <DialogContent>
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Name"
-              name="name"
-              value={userFormData.name}
-              onChange={handleUserInputChange}
-              required
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              value={userFormData.email}
-              onChange={handleUserInputChange}
-              required
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Phone"
-              name="phone"
-              value={userFormData.phone}
-              onChange={handleUserInputChange}
-              required
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              multiline
-              rows={2}
-              label="Address"
-              name="address"
-              value={userFormData.address}
-              onChange={handleUserInputChange}
-              required
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              select
-              label="Role"
-              name="role"
-              value={userFormData.role}
-              onChange={handleUserInputChange}
-              SelectProps={{ native: true }}
-              required
-            >
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </TextField>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleUserDialogClose} disabled={uploading}>
-              Cancel
-            </Button>
-            <Button type="submit" color="primary" variant="contained" disabled={uploading}>
-              {uploading ? 'Saving...' : 'Save'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
+        {/* Add/Edit Product Dialog */}
+        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+          <form onSubmit={handleSubmit}>
+            <DialogTitle>{editing ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+            <DialogContent>
+              <Box sx={{ mb: 2 }}>
+                <ImageUploader onUpload={handleImageUpload} />
+              </Box>
+              <TextField
+                margin="normal"
+                fullWidth
+                label="Name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                multiline
+                rows={3}
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                type="number"
+                label="Price"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                inputProps={{ min: 0, step: '0.01' }}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                type="number"
+                label="Stock"
+                name="stock"
+                value={formData.stock}
+                onChange={handleInputChange}
+                inputProps={{ min: 0 }}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                select
+                label="Category"
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                SelectProps={{ native: true }}
+                required
+              >
+                <option value="Premium">Premium</option>
+                <option value="Regular">Regular</option>
+                <option value="Special">Special</option>
+              </TextField>
+
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} disabled={uploading}>
+                Cancel
+              </Button>
+              <Button type="submit" color="primary" variant="contained" disabled={uploading}>
+                {uploading ? 'Saving...' : 'Save'}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+
+        {/* Add/Edit User Dialog */}
+        <Dialog open={userDialogOpen} onClose={handleUserDialogClose} maxWidth="sm" fullWidth>
+          <form onSubmit={handleUserSubmit}>
+            <DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
+            <DialogContent>
+              <TextField
+                margin="normal"
+                fullWidth
+                label="Name"
+                name="name"
+                value={userFormData.name}
+                onChange={handleUserInputChange}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                label="Email"
+                name="email"
+                type="email"
+                value={userFormData.email}
+                onChange={handleUserInputChange}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                label="Phone"
+                name="phone"
+                value={userFormData.phone}
+                onChange={handleUserInputChange}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                multiline
+                rows={2}
+                label="Address"
+                name="address"
+                value={userFormData.address}
+                onChange={handleUserInputChange}
+                required
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                select
+                label="Role"
+                name="role"
+                value={userFormData.role}
+                onChange={handleUserInputChange}
+                SelectProps={{ native: true }}
+                required
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </TextField>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleUserDialogClose} disabled={uploading}>
+                Cancel
+              </Button>
+              <Button type="submit" color="primary" variant="contained" disabled={uploading}>
+                {uploading ? 'Saving...' : 'Save'}
+              </Button>
+            </DialogActions>
+          </form>
+        </Dialog>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </LocalizationProvider>
     </Box>
   )
