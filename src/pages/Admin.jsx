@@ -32,7 +32,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
 import { db } from '../config/firebase'
-import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc, getDocs } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
 import ImageUploader from '../components/ImageUploader'
 
@@ -95,11 +95,40 @@ const Admin = () => {
   const [editingUser, setEditingUser] = useState(false)
   const [editingDocPath, setEditingDocPath] = useState(null)
   const [uploading, setUploading] = useState(false)
+  const [announcement, setAnnouncement] = useState('');
+  const [loadingAnnouncement, setLoadingAnnouncement] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success'
   })
+
+  // Fetch announcement
+  useEffect(() => {
+    const fetchAnnouncement = async () => {
+      try {
+        setLoadingAnnouncement(true);
+        const q = collection(db, 'announcement');
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const announcementDoc = querySnapshot.docs[0].data();
+          setAnnouncement(announcementDoc.message || '');
+        }
+      } catch (error) {
+        console.error('Error fetching announcement:', error);
+        setSnackbar({
+          open: true,
+          message: 'Failed to load announcement',
+          severity: 'error'
+        });
+      } finally {
+        setLoadingAnnouncement(false);
+      }
+    };
+
+    fetchAnnouncement();
+  }, []);
 
   // Fetch products, users, and orders
   useEffect(() => {
@@ -318,6 +347,88 @@ const Admin = () => {
     }
   }
 
+  const handleUpdateAnnouncement = async () => {
+    if (!announcement.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter an announcement message',
+        severity: 'warning'
+      });
+      return;
+    }
+
+    try {
+      setLoadingAnnouncement(true);
+      // Get the first document in the collection
+      const querySnapshot = await getDocs(collection(db, 'announcement'));
+      let docRef;
+      
+      if (querySnapshot.empty) {
+        // If no document exists, create a new one
+        docRef = await addDoc(collection(db, 'announcement'), {
+          message: announcement.trim(),
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        // Update the existing document
+        const docToUpdate = querySnapshot.docs[0];
+        docRef = doc(db, 'announcement', docToUpdate.id);
+        await updateDoc(docRef, {
+          message: announcement.trim(),
+          updatedAt: serverTimestamp()
+        });
+      }
+
+      setSnackbar({
+        open: true,
+        message: 'Announcement updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error updating announcement:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to update announcement',
+        severity: 'error'
+      });
+    } finally {
+      setLoadingAnnouncement(false);
+    }
+  };
+
+  const handleDeleteAnnouncement = async () => {
+    try {
+      setLoadingAnnouncement(true);
+      // Get the first document in the collection
+      const querySnapshot = await getDocs(collection(db, 'announcement'));
+      
+      if (!querySnapshot.empty) {
+        const docToDelete = querySnapshot.docs[0];
+        await deleteDoc(doc(db, 'announcement', docToDelete.id));
+      }
+      
+      setAnnouncement('');
+      setSnackbar({
+        open: true,
+        message: 'Announcement cleared successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to clear announcement',
+        severity: 'error'
+      });
+    } finally {
+      setLoadingAnnouncement(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false })
+  }
+
   return (
     <Box sx={{ width: '100%' }}>
     <Box
@@ -353,6 +464,7 @@ const Admin = () => {
             <Tab label="PRODUCTS" />
             <Tab label="ORDERS" />
             <Tab label="USERS" />
+            <Tab label="ANNOUNCEMENT" />
           </Tabs>
         </Box>
 
@@ -467,6 +579,42 @@ const Admin = () => {
               </TableBody>
             </Table>
           </TableContainer>
+        </TabPanel>
+
+        <TabPanel value={tab} index={3}>
+          <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
+            <Typography variant="h5" gutterBottom>Manage Announcement</Typography>
+            <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                variant="outlined"
+                label="Announcement Message"
+                value={announcement}
+                onChange={(e) => setAnnouncement(e.target.value)}
+                sx={{ mb: 2 }}
+              />
+              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  onClick={handleUpdateAnnouncement}
+                  disabled={loadingAnnouncement}
+                >
+                  {loadingAnnouncement ? <CircularProgress size={24} /> : 'Update'}
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  color="error" 
+                  onClick={handleDeleteAnnouncement}
+                  disabled={loadingAnnouncement || !announcement}
+                >
+                  {loadingAnnouncement ? <CircularProgress size={24} /> : 'Clear'}
+                </Button>
+              </Box>
+            </Paper>
+          </Box>
         </TabPanel>
 
         <TabPanel value={tab} index={1}>
