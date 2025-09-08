@@ -160,6 +160,7 @@ const Orders = () => {
                   <TableCell>Total Price</TableCell>
                   <TableCell>Order Date</TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Notes</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -199,11 +200,12 @@ const Orders = () => {
                           {order.status || 'pending'}
                         </Typography>
                       </TableCell>
+                      <TableCell>{order.notes || '-'}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                    <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                       <Typography variant="body1" color="textSecondary">
                         No orders found for the selected date range
                       </Typography>
