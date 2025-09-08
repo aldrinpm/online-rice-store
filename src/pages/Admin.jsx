@@ -235,9 +235,16 @@ const Admin = () => {
         price: formData.price,
         stock: formData.stock,
         category: formData.category,
-        imageUrl: formData.imageUrl || '', // Include imageUrl, default to empty string if not set
         updatedAt: serverTimestamp(),
-        ...(!editing && { createdAt: serverTimestamp() })
+        ...(!editing && { 
+          imageUrl: formData.imageUrl || '',
+          createdAt: serverTimestamp() 
+        })
+      };
+      
+      // Only include imageUrl when editing if a new image was uploaded
+      if (editing && formData.imageUrl) {
+        productData.imageUrl = formData.imageUrl;
       }
 
       if (editing) {
