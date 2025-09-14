@@ -531,6 +531,94 @@ const Admin = () => {
           </TableContainer>
         </TabPanel>
 
+        <TabPanel value={tab} index={1}>
+          {/* Orders tab content */}
+          <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={(date) => handleDateChange('start', date)}
+              renderInput={(params) => <TextField {...params} size="small" />}
+            />
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={(date) => handleDateChange('end', date)}
+              renderInput={(params) => <TextField {...params} size="small" />}
+            />
+            <Button
+              variant="contained"
+              startIcon={<Event />}
+              onClick={() => {
+                const today = new Date()
+                setStartDate(startOfDay(today))
+                setEndDate(endOfDay(today))
+              }}
+            >
+              Today
+            </Button>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Order ID</TableCell>
+                  <TableCell>Customer</TableCell>
+                  <TableCell>Product</TableCell>
+                  <TableCell>Quantity</TableCell>
+                  <TableCell>Total</TableCell>
+                  <TableCell>Order Date</TableCell>
+                  <TableCell>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell>{order.id.substring(0, 8)}...</TableCell>
+                      <TableCell>{order.customerName}</TableCell>
+                      <TableCell>{order.productName}</TableCell>
+                      <TableCell>{order.quantity}</TableCell>
+                      <TableCell>
+                        ₱{order.totalPrice?.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <FormControl size="small" variant="outlined" fullWidth>
+                          <Select
+                            value={order.status || 'pending'}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            displayEmpty
+                            inputProps={{ 'aria-label': 'Order status' }}
+                          >
+                            <MenuItem value="pending">Pending</MenuItem>
+                            <MenuItem value="completed">Completed</MenuItem>
+                            <MenuItem value="cancelled">Cancelled</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                      <Typography variant="body1" color="textSecondary">
+                        No orders found for the selected date range
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </TabPanel>
+
         <TabPanel value={tab} index={2}>
           {/* Users tab content */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
@@ -622,94 +710,6 @@ const Admin = () => {
               </Box>
             </Paper>
           </Box>
-        </TabPanel>
-
-        <TabPanel value={tab} index={1}>
-          {/* Orders tab content */}
-          <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-            <DatePicker
-              label="Start Date"
-              value={startDate}
-              onChange={(date) => handleDateChange('start', date)}
-              renderInput={(params) => <TextField {...params} size="small" />}
-            />
-            <DatePicker
-              label="End Date"
-              value={endDate}
-              onChange={(date) => handleDateChange('end', date)}
-              renderInput={(params) => <TextField {...params} size="small" />}
-            />
-            <Button
-              variant="contained"
-              startIcon={<Event />}
-              onClick={() => {
-                const today = new Date()
-                setStartDate(startOfDay(today))
-                setEndDate(endOfDay(today))
-              }}
-            >
-              Today
-            </Button>
-          </Box>
-
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Customer</TableCell>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Total</TableCell>
-                  <TableCell>Order Date</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>{order.id.substring(0, 8)}...</TableCell>
-                      <TableCell>{order.customerName}</TableCell>
-                      <TableCell>{order.productName}</TableCell>
-                      <TableCell>{order.quantity}</TableCell>
-                      <TableCell>
-                        ₱{order.totalPrice?.toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <FormControl size="small" variant="outlined" fullWidth>
-                          <Select
-                            value={order.status || 'pending'}
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                            displayEmpty
-                            inputProps={{ 'aria-label': 'Order status' }}
-                          >
-                            <MenuItem value="pending">Pending</MenuItem>
-                            <MenuItem value="completed">Completed</MenuItem>
-                            <MenuItem value="cancelled">Cancelled</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                      <Typography variant="body1" color="textSecondary">
-                        No orders found for the selected date range
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
         </TabPanel>
 
         {/* Add/Edit Product Dialog */}
