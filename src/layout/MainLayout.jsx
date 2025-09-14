@@ -73,20 +73,14 @@ function MainLayout() {
     </Box>
   )
 
-  const HEADER_HEIGHT = 64 // px
-  const FOOTER_HEIGHT = 48 // px
-
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
-      <Box sx={{ height: `${HEADER_HEIGHT}px`, flexShrink: 0 }}>
-        <Header />
-      </Box>
+      <Header />
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Paper
           elevation={1}
           sx={{
             width: { xs: iconOnlyWidth, sm: drawerWidth },
-            height: `calc(100vh - ${HEADER_HEIGHT + FOOTER_HEIGHT}px)`,
             display: 'flex',
             flexDirection: 'column',
             boxSizing: 'border-box',
@@ -95,15 +89,11 @@ function MainLayout() {
         >
           {drawerContent}
         </Paper>
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          <Box component="main" sx={{ p: 3, flex: 1, minHeight: 0 }}>
-            <Outlet />
-          </Box>
+        <Box component="main" sx={{ p: 3, flex: 1, minHeight: 0 }}>
+          <Outlet />
         </Box>
       </Box>
-      <Box sx={{ height: `${FOOTER_HEIGHT}px`, flexShrink: 0 }}>
-        <Footer />
-      </Box>
+      <Footer />
     </Box>
   )
 }
