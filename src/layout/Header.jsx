@@ -40,14 +40,64 @@ function Header() {
 
   return (
     <AppBar position="static" color="primary" elevation={1} sx={{ boxShadow: 0 }}>
-      <Toolbar sx={{ justifyContent: 'center', position: 'relative' }}>
-        <Box sx={{ position: 'absolute', left: 16 }} />
-        <Typography component="h1" variant="h6" sx={{ flexGrow: 1, textAlign: 'center' }}>
+      <Toolbar sx={{ 
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
+        width: '100%',
+        px: 2
+      }}>
+        {/* Left spacer - keeps the title centered */}
+        <Box />
+        
+        {/* Center Title */}
+        <Typography 
+          component="h1" 
+          variant="h6" 
+          sx={{ 
+            textAlign: 'center',
+            fontSize: { 
+              xs: '1rem',
+              sm: '1.1rem',
+              md: '1.25rem'
+            },
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            px: 1,
+            maxWidth: '100%',
+            justifySelf: 'center'
+          }}
+        >
           Marvin Online Rice Store
         </Typography>
-        <Box sx={{ position: 'absolute', right: 16, display: 'flex', alignItems: 'center', gap: 2 }}>
+        
+        {/* Right side content */}
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'flex-end',
+          gap: { xs: 1, sm: 2 },
+          ml: 'auto',
+          maxWidth: '100%'
+        }}>
           {user && (
-            <Typography variant="body1" sx={{ fontWeight: 400 }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontWeight: 400,
+                fontSize: { 
+                  xs: '0.75rem',
+                  sm: '0.85rem',
+                  md: '0.95rem'
+                },
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: { xs: '80px', sm: '150px', md: '250px' },
+                display: { xs: 'none', sm: 'block' } // Hide on extra small screens
+              }}
+            >
               Welcome {user.displayName}
             </Typography>
           )}
