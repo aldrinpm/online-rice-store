@@ -484,7 +484,7 @@ const Admin = () => {
 
         <TabPanel value={tab} index={0}>
           {/* Products tab content */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-start' }}>
             <Button
               variant="contained"
               color="primary"
@@ -557,6 +557,8 @@ const Admin = () => {
               onChange={(date) => handleDateChange('end', date)}
               renderInput={(params) => <TextField {...params} size="small" />}
             />
+          </Box>
+          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-start' }}>
             <Button
               variant="contained"
               startIcon={<Event />}
@@ -636,7 +638,7 @@ const Admin = () => {
 
         <TabPanel value={tab} index={2}>
           {/* Users tab content */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
             <Button
               variant="contained"
               startIcon={<Add />}
