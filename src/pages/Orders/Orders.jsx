@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../../config/firebase';
 import { 
   Box, 
   Typography, 
@@ -20,6 +20,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, subMonths, isWithinInterval, parseISO } from 'date-fns';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import CustomerOrderCards from './CustomerOrderCards';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -27,6 +30,8 @@ const Orders = () => {
   const [startDate, setStartDate] = useState(subMonths(new Date(), 1));
   const [endDate, setEndDate] = useState(new Date());
   const [error, setError] = useState('');
+  const theme = useTheme();
+  const isMobileView = useMediaQuery(theme.breakpoints.down('md'));
 
   // Fetch orders from Firestore
   useEffect(() => {
@@ -147,75 +152,78 @@ const Orders = () => {
           )}
         </Paper>
 
-        {/* Orders Table */}
-        <Paper elevation={2}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Customer Name</TableCell>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Total Price</TableCell>
-                  <TableCell>Order Date</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Notes</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>{order.id.substring(0, 8)}...</TableCell>
-                      <TableCell>{order.customerName}</TableCell>
-                      <TableCell>{order.productName}</TableCell>
-                      <TableCell>{order.quantity}</TableCell>
-                      <TableCell>
-                        ₱{order.totalPrice?.toLocaleString('en-US', { 
-                          minimumFractionDigits: 2, 
-                          maximumFractionDigits: 2 
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        {order.createdAt ? format(order.createdAt, 'MMM dd, yyyy HH:mm') : 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <Typography 
-                          variant="body2" 
-                          sx={{
-                            color: 'white',
-                            backgroundColor: 
-                              order.status === 'completed' 
-                                ? 'success.main' 
-                                : order.status === 'cancelled' 
-                                ? 'error.main' 
-                                : 'warning.main',
-                            borderRadius: 1,
-                            px: 1,
-                            display: 'inline-block',
-                            textTransform: 'capitalize'
-                          }}
-                        >
-                          {order.status || 'pending'}
+        {isMobileView ? (
+          <CustomerOrderCards filteredOrders={filteredOrders} />
+        ) : (
+          <Paper elevation={2}>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Order ID</TableCell>
+                    <TableCell>Customer Name</TableCell>
+                    <TableCell>Product</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Total Price</TableCell>
+                    <TableCell>Order Date</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Notes</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredOrders.length > 0 ? (
+                    filteredOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell>{order.id.substring(0, 8)}...</TableCell>
+                        <TableCell>{order.customerName}</TableCell>
+                        <TableCell>{order.productName}</TableCell>
+                        <TableCell>{order.quantity}</TableCell>
+                        <TableCell>
+                          ₱{order.totalPrice?.toLocaleString('en-US', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          {order.createdAt ? format(order.createdAt, 'MMM dd, yyyy HH:mm') : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Typography 
+                            variant="body2" 
+                            sx={{
+                              color: 'white',
+                              backgroundColor: 
+                                order.status === 'completed' 
+                                  ? 'success.main' 
+                                  : order.status === 'cancelled' 
+                                  ? 'error.main' 
+                                  : 'warning.main',
+                              borderRadius: 1,
+                              px: 1,
+                              display: 'inline-block',
+                              textTransform: 'capitalize'
+                            }}
+                          >
+                            {order.status || 'pending'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>{order.notes || '-'}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                        <Typography variant="body1" color="textSecondary">
+                          No orders found for the selected date range
                         </Typography>
                       </TableCell>
-                      <TableCell>{order.notes || '-'}</TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
-                      <Typography variant="body1" color="textSecondary">
-                        No orders found for the selected date range
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        )}
       </Box>
     </LocalizationProvider>
   );

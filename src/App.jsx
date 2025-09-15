@@ -6,9 +6,9 @@ import { AuthProvider, ProtectedRoute } from './contexts/AuthContext'
 import MainLayout from './layout/MainLayout'
 import Home from './pages/Home'
 import Products from './pages/Products'
-import Orders from './pages/Orders'
+import Orders from './pages/Orders/Orders'
 import Profile from './pages/Profile'
-import Admin from './pages/Admin'
+import Admin from './pages/Admin/Admin'
 
 const theme = createTheme({
   palette: { mode: 'light' },

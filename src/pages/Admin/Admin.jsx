@@ -31,10 +31,15 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
-import { db } from '../config/firebase'
+import { db } from '../../config/firebase'
 import { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp, setDoc, getDocs } from 'firebase/firestore'
-import { useAuth } from '../contexts/AuthContext'
-import ImageUploader from '../components/ImageUploader'
+import { useAuth } from '../../contexts/AuthContext'
+import ImageUploader from '../../components/ImageUploader'
+import ProductCards from './ProductCards'
+import OrderCards from './OrderCards'
+import UserCards from './UserCards'
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -62,6 +67,8 @@ const initialUserFormState = {
 
 const Admin = () => {
   const { currentUser, isAdmin, loading: authLoading } = useAuth()
+  const theme = useTheme();
+  const isMobileView = useMediaQuery(theme.breakpoints.down('md'));
   const [orders, setOrders] = useState([])
   const [filteredOrders, setFilteredOrders] = useState([])
   const [startDate, setStartDate] = useState(startOfDay(new Date()))
@@ -488,47 +495,51 @@ const Admin = () => {
             </Button>
           </Box>
 
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Price</TableCell>
-                  <TableCell>Stock</TableCell>
-                  <TableCell>Added</TableCell>
-                  <TableCell>Updated</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product._docPath || product.id}>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>{product.description}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>₱{product.price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      {product.createdAt?.toDate ? product.createdAt.toDate().toLocaleString() : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      {product.updatedAt?.toDate ? product.updatedAt.toDate().toLocaleString() : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleEdit(product)} color="primary">
-                        <Edit />
-                      </IconButton>
-                      <IconButton onClick={() => handleDelete(product._docPath)} color="error">
-                        <Delete />
-                      </IconButton>
-                    </TableCell>
+          {isMobileView ? (
+            <ProductCards products={products} handleEdit={handleEdit} handleDelete={handleDelete} />
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Description</TableCell>
+                    <TableCell>Category</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Stock</TableCell>
+                    <TableCell>Added</TableCell>
+                    <TableCell>Updated</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product._docPath || product.id}>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{product.description}</TableCell>
+                      <TableCell>{product.category}</TableCell>
+                      <TableCell>₱{product.price?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                      <TableCell>{product.stock}</TableCell>
+                      <TableCell>
+                        {product.createdAt?.toDate ? product.createdAt.toDate().toLocaleString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        {product.updatedAt?.toDate ? product.updatedAt.toDate().toLocaleString() : 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => handleEdit(product)} color="primary">
+                          <Edit />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(product._docPath)} color="error">
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </TabPanel>
 
         <TabPanel value={tab} index={1}>
@@ -559,64 +570,68 @@ const Admin = () => {
             </Button>
           </Box>
 
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Order ID</TableCell>
-                  <TableCell>Customer</TableCell>
-                  <TableCell>Product</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>Total</TableCell>
-                  <TableCell>Order Date</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>{order.id.substring(0, 8)}...</TableCell>
-                      <TableCell>{order.customerName}</TableCell>
-                      <TableCell>{order.productName}</TableCell>
-                      <TableCell>{order.quantity}</TableCell>
-                      <TableCell>
-                        ₱{order.totalPrice?.toLocaleString('en-US', {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2
-                        })}
-                      </TableCell>
-                      <TableCell>
-                        {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        <FormControl size="small" variant="outlined" fullWidth>
-                          <Select
-                            value={order.status || 'pending'}
-                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                            displayEmpty
-                            inputProps={{ 'aria-label': 'Order status' }}
-                          >
-                            <MenuItem value="pending">Pending</MenuItem>
-                            <MenuItem value="completed">Completed</MenuItem>
-                            <MenuItem value="cancelled">Cancelled</MenuItem>
-                          </Select>
-                        </FormControl>
+          {isMobileView ? (
+            <OrderCards filteredOrders={filteredOrders} handleStatusChange={handleStatusChange} />
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Order ID</TableCell>
+                    <TableCell>Customer</TableCell>
+                    <TableCell>Product</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Total</TableCell>
+                    <TableCell>Order Date</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredOrders.length > 0 ? (
+                    filteredOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell>{order.id.substring(0, 8)}...</TableCell>
+                        <TableCell>{order.customerName}</TableCell>
+                        <TableCell>{order.productName}</TableCell>
+                        <TableCell>{order.quantity}</TableCell>
+                        <TableCell>
+                          ₱{order.totalPrice?.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          {order.createdAt ? format(order.createdAt.toDate(), 'MMM dd, yyyy HH:mm') : 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <FormControl size="small" variant="outlined" fullWidth>
+                            <Select
+                              value={order.status || 'pending'}
+                              onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                              displayEmpty
+                              inputProps={{ 'aria-label': 'Order status' }}
+                            >
+                              <MenuItem value="pending">Pending</MenuItem>
+                              <MenuItem value="completed">Completed</MenuItem>
+                              <MenuItem value="cancelled">Cancelled</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                        <Typography variant="body1" color="textSecondary">
+                          No orders found for the selected date range
+                        </Typography>
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                      <Typography variant="body1" color="textSecondary">
-                        No orders found for the selected date range
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </TabPanel>
 
         <TabPanel value={tab} index={2}>
@@ -634,46 +649,50 @@ const Admin = () => {
               Add User
             </Button>
           </Box>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user._docPath}>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => {
-                        setUserFormData({
-                          name: user.name || '',
-                          email: user.email || '',
-                          phone: user.phone || '',
-                          address: user.address || '',
-                          role: user.role || 'user'
-                        })
-                        setEditingUser(true)
-                        setEditingDocPath(user._docPath)
-                        setUserDialogOpen(true)
-                      }}>
-                        <Edit />
-                      </IconButton>
-                      <IconButton onClick={() => handleDelete(user._docPath)}>
-                        <Delete />
-                      </IconButton>
-                    </TableCell>
+          {isMobileView ? (
+            <UserCards users={users} setUserFormData={setUserFormData} setEditingUser={setEditingUser} setEditingDocPath={setEditingDocPath} setUserDialogOpen={setUserDialogOpen} handleDelete={handleDelete} />
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user._docPath}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.role}</TableCell>
+                      <TableCell>
+                        <IconButton onClick={() => {
+                          setUserFormData({
+                            name: user.name || '',
+                            email: user.email || '',
+                            phone: user.phone || '',
+                            address: user.address || '',
+                            role: user.role || 'user'
+                          })
+                          setEditingUser(true)
+                          setEditingDocPath(user._docPath)
+                          setUserDialogOpen(true)
+                        }}>
+                          <Edit />
+                        </IconButton>
+                        <IconButton onClick={() => handleDelete(user._docPath)}>
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </TabPanel>
 
         <TabPanel value={tab} index={3}>
